@@ -31,6 +31,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const currentKeyRef = useRef<string | null>(null);
+  const hydratedKeyRef = useRef<string | null>(null);
 
   // Carrega o carrinho correspondente ao usuário (ou guest) sempre que o user mudar
   useEffect(() => {
@@ -39,13 +40,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const key = storageKey(user?.id);
     currentKeyRef.current = key;
+    hydratedKeyRef.current = null;
+    setItems([]);
 
     try {
       const raw = localStorage.getItem(key);
-      setItems(raw ? JSON.parse(raw) : []);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setItems(Array.isArray(parsed) ? parsed : []);
     } catch {
       setItems([]);
     }
+
+    hydratedKeyRef.current = key;
   }, [user?.id, loading]);
 
   // Persiste apenas no carrinho do usuário atualmente carregado
@@ -54,6 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (loading) return;
     const key = currentKeyRef.current;
     if (!key) return;
+    if (hydratedKeyRef.current !== key) return;
     // Garante que estamos escrevendo na chave do usuário atual
     if (key !== storageKey(user?.id)) return;
     localStorage.setItem(key, JSON.stringify(items));

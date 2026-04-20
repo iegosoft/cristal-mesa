@@ -4,6 +4,9 @@ import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { AuthProvider } from "@/lib/auth";
+import { CartProvider } from "@/lib/cart";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -36,7 +39,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Louças de vidro, cristais e mesa posta para encantar seus momentos especiais. Conheça o catálogo e compre pelo WhatsApp.",
+          "Louças de vidro, cristais e mesa posta para encantar seus momentos especiais. Conheça o catálogo e compre online.",
       },
       { name: "author", content: "Mesa & Cristal" },
       { property: "og:type", content: "website" },
@@ -70,13 +73,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <SiteFooter />
-      <WhatsAppFloat />
-    </div>
+    <AuthProvider>
+      <CartProvider>
+        <div className="flex min-h-screen flex-col bg-background">
+          <SiteHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <SiteFooter />
+          <WhatsAppFloat />
+          <Toaster />
+        </div>
+      </CartProvider>
+    </AuthProvider>
   );
 }

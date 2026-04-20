@@ -4,6 +4,7 @@ import { Menu, X, ShoppingBag, User, LogOut, LayoutDashboard } from "lucide-reac
 import { SITE_NAME } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
   { to: "/", label: "Início" },
@@ -45,6 +46,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {isAdmin && (
             <Link
               to="/admin/dashboard"
@@ -79,6 +81,7 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <Link to="/carrinho" className="relative rounded-md p-2 text-foreground" aria-label="Carrinho">
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (

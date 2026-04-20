@@ -98,6 +98,38 @@ export type Database = {
         }
         Relationships: []
       }
+      produto_imagens: {
+        Row: {
+          criado_em: string
+          id: string
+          ordem: number
+          produto_id: string
+          url: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          ordem?: number
+          produto_id: string
+          url: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          ordem?: number
+          produto_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produto_imagens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       produtos: {
         Row: {
           ativo: boolean

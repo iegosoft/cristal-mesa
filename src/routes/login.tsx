@@ -33,7 +33,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate({ to: search.redirect as "/" });
+      navigate({ to: (search.redirect ?? "/") as "/" });
     }
   }, [user, loading, navigate, search.redirect]);
 

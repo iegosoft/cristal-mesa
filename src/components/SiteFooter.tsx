@@ -8,8 +8,8 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3">
         <div>
-          <img src={logo} alt={`${SITE_NAME} — logo`} className="h-16 w-auto" />
-          <p className="mt-3 text-sm font-light text-muted-foreground">{SITE_TAGLINE}</p>
+          <img src={logo} alt={`${SITE_NAME} — logo`} className="h-24 w-auto drop-shadow-sm" />
+          <p className="mt-4 text-sm font-light text-muted-foreground">{SITE_TAGLINE}</p>
         </div>
 
         <div>

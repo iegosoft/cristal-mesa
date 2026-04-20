@@ -6,8 +6,8 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    redirect: typeof s.redirect === "string" ? s.redirect : "/",
+  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
   }),
   head: () => ({ meta: [{ title: "Entrar — Mesa & Cristal" }] }),
   component: LoginPage,
@@ -33,7 +33,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate({ to: search.redirect as "/" });
+      navigate({ to: (search.redirect ?? "/") as "/" });
     }
   }, [user, loading, navigate, search.redirect]);
 

@@ -120,8 +120,28 @@ function CheckoutPage() {
       endereco: parsed.data.endereco,
     }).eq("id", user.id);
 
-    // Monta mensagem WhatsApp
-    const lines = items.map((i) => `• ${i.quantidade}x ${i.nome} — ${formatBRL(i.preco * i.quantidade)}`);
+    const productIds = [...new Set(items.map((item) => item.id))];
+    const [{ data: produtosData }, { data: extrasData }] = await Promise.all([
+      supabase.from("produtos").select("id, imagem_url").in("id", productIds),
+      supabase.from("produto_imagens").select("produto_id, url, ordem").in("produto_id", productIds).order("ordem", { ascending: true }),
+    ]);
+
+    const imageMap = new Map<string, string>();
+
+    for (const produto of produtosData ?? []) {
+      if (produto.imagem_url) imageMap.set(produto.id, produto.imagem_url);
+    }
+
+    for (const extra of extrasData ?? []) {
+      if (!imageMap.has(extra.produto_id)) imageMap.set(extra.produto_id, extra.url);
+    }
+
+    // Monta mensagem WhatsApp (com link clicável da foto do produto)
+    const lines = items.map((i) => {
+      const linha = `• ${i.quantidade}x ${i.nome} — ${formatBRL(i.preco * i.quantidade)}`;
+      const imageUrl = imageMap.get(i.id) ?? i.imagem_url;
+      return imageUrl ? `${linha}\n  📷 ${imageUrl}` : linha;
+    });
     const msg = [
       `🌸 *Novo pedido — Mesa & Cristal*`,
       `Pedido #${pedido.id.slice(0, 8)}`,

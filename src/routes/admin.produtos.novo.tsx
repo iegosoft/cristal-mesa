@@ -29,19 +29,23 @@ function NovoProdutoPage() {
         }}
         submitLabel="Criar produto"
         onSubmit={async (values) => {
-          const { error } = await supabase.from("produtos").insert({
-            nome: values.nome,
-            descricao: values.descricao,
-            preco: Number(values.preco),
-            estoque: Number(values.estoque),
-            categoria: values.categoria,
-            imagem_url: values.imagem_url || null,
-            ativo: values.ativo,
-          });
-          if (error) toast.error(error.message);
+          const { data, error } = await supabase
+            .from("produtos")
+            .insert({
+              nome: values.nome,
+              descricao: values.descricao,
+              preco: Number(values.preco),
+              estoque: Number(values.estoque),
+              categoria: values.categoria,
+              imagem_url: values.imagem_url || null,
+              ativo: values.ativo,
+            })
+            .select("id")
+            .single();
+          if (error || !data) toast.error(error?.message ?? "Erro ao criar");
           else {
-            toast.success("Produto criado!");
-            navigate({ to: "/admin/produtos" });
+            toast.success("Produto criado! Agora adicione fotos extras.");
+            navigate({ to: "/admin/produtos/editar/$id", params: { id: data.id } });
           }
         }}
       />

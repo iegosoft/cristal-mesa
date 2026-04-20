@@ -24,21 +24,39 @@ function ProductDetailPage() {
   const navigate = useNavigate();
   const { add } = useCart();
   const [produto, setProduto] = useState<Produto | null>(null);
+  const [galeria, setGaleria] = useState<string[]>([]);
+  const [imagemAtiva, setImagemAtiva] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
+    let cancelado = false;
     setLoading(true);
-    supabase
-      .from("produtos")
-      .select("id, nome, categoria, preco, descricao, imagem_url, estoque")
-      .eq("id", id)
-      .eq("ativo", true)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setProduto({ ...data, preco: Number(data.preco) });
-        setLoading(false);
-      });
+    (async () => {
+      const { data: prod } = await supabase
+        .from("produtos")
+        .select("id, nome, categoria, preco, descricao, imagem_url, estoque")
+        .eq("id", id)
+        .eq("ativo", true)
+        .maybeSingle();
+      if (cancelado) return;
+      if (prod) {
+        const principal = prod.imagem_url ?? null;
+        setProduto({ ...prod, preco: Number(prod.preco) });
+        const { data: extras } = await supabase
+          .from("produto_imagens")
+          .select("url")
+          .eq("produto_id", id)
+          .order("ordem", { ascending: true });
+        if (cancelado) return;
+        const urlsExtras = (extras ?? []).map((e) => e.url);
+        const todas = [principal, ...urlsExtras].filter((u): u is string => !!u);
+        setGaleria(todas);
+        setImagemAtiva(todas[0] ?? null);
+      }
+      setLoading(false);
+    })();
+    return () => { cancelado = true; };
   }, [id]);
 
   if (loading) {
@@ -72,11 +90,30 @@ function ProductDetailPage() {
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
       <div className="grid gap-12 md:grid-cols-2">
-        <div className="aspect-square overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-soft)]">
-          {produto.imagem_url ? (
-            <img src={produto.imagem_url} alt={produto.nome} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">sem imagem</div>
+        <div className="space-y-3">
+          <div className="aspect-square overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-soft)]">
+            {imagemAtiva ? (
+              <img src={imagemAtiva} alt={produto.nome} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">sem imagem</div>
+            )}
+          </div>
+          {galeria.length > 1 && (
+            <div className="grid grid-cols-5 gap-2">
+              {galeria.map((url) => (
+                <button
+                  key={url}
+                  type="button"
+                  onClick={() => setImagemAtiva(url)}
+                  className={`aspect-square overflow-hidden rounded-lg border-2 bg-muted transition-all ${
+                    imagemAtiva === url ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"
+                  }`}
+                  aria-label="Ver foto"
+                >
+                  <img src={url} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
           )}
         </div>
         <div>

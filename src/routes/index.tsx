@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Heart, Truck } from "lucide-react";
+import { useEffect, useState } from "react";
 import heroImg from "@/assets/hero-table.jpg";
-import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { ProductCard, type ProductCardProduct } from "@/components/ProductCard";
 import { whatsappLink } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,7 +26,19 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const featured = products.slice(0, 3);
+  const [featured, setFeatured] = useState<ProductCardProduct[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("produtos")
+      .select("id, nome, categoria, preco, descricao, imagem_url")
+      .eq("ativo", true)
+      .order("criado_em", { ascending: false })
+      .limit(3)
+      .then(({ data }) => {
+        if (data) setFeatured(data.map((p) => ({ ...p, preco: Number(p.preco) })));
+      });
+  }, []);
 
   return (
     <>
@@ -45,10 +58,10 @@ function HomePage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                to="/catalogo"
+                to="/produtos"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-medium uppercase tracking-wider text-primary-foreground transition-colors hover:bg-[var(--rose-deep)]"
               >
-                Ver catálogo <ArrowRight className="h-4 w-4" />
+                Ver produtos <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href={whatsappLink("Olá! Gostaria de conhecer mais sobre os produtos.")}
@@ -97,24 +110,26 @@ function HomePage() {
       </section>
 
       {/* DESTAQUES */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Destaques</span>
-            <h2 className="mt-2 font-serif text-3xl text-foreground md:text-5xl">
-              Peças preferidas da casa
-            </h2>
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 py-20">
+          <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Destaques</span>
+              <h2 className="mt-2 font-serif text-3xl text-foreground md:text-5xl">
+                Peças preferidas da casa
+              </h2>
+            </div>
+            <Link to="/produtos" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+              Ver tudo <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <Link to="/catalogo" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-            Ver tudo <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="px-6 pb-20">

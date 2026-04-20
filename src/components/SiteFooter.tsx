@@ -15,7 +15,7 @@ export function SiteFooter() {
           <h4 className="font-serif text-lg text-foreground">Navegação</h4>
           <ul className="mt-3 space-y-2 text-sm font-light text-muted-foreground">
             <li><Link to="/" className="hover:text-primary">Início</Link></li>
-            <li><Link to="/catalogo" className="hover:text-primary">Catálogo</Link></li>
+            <li><Link to="/produtos" className="hover:text-primary">Produtos</Link></li>
             <li><Link to="/sobre" className="hover:text-primary">Sobre</Link></li>
             <li><Link to="/contato" className="hover:text-primary">Contato</Link></li>
           </ul>

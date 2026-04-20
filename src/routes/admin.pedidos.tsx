@@ -59,8 +59,8 @@ function AdminPedidosPage() {
     }
   };
 
-  const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("pedidos").update({ status: status as Pedido["status"] }).eq("id", id);
+  const updateStatus = async (id: string, status: typeof STATUS[number]) => {
+    const { error } = await supabase.from("pedidos").update({ status }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Status atualizado"); load(); }
   };
@@ -123,7 +123,7 @@ function AdminPedidosPage() {
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Atualizar status:</span>
                     <select
                       value={p.status}
-                      onChange={(e) => updateStatus(p.id, e.target.value)}
+                      onChange={(e) => updateStatus(p.id, e.target.value as typeof STATUS[number])}
                       className="rounded-full border border-border bg-background px-3 py-1.5 text-xs"
                     >
                       {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}

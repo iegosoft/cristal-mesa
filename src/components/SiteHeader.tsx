@@ -5,6 +5,7 @@ import { SITE_NAME } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import logo from "@/assets/logo-vieira-decor.png";
 
 const links = [
   { to: "/", label: "Início" },
@@ -26,9 +27,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="font-serif text-2xl tracking-wide text-foreground">
-          {SITE_NAME}
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6 md:h-28">
+        <Link to="/" aria-label={SITE_NAME} className="flex items-center">
+          <img
+            src={logo}
+            alt={`${SITE_NAME} — logo`}
+            className="h-20 w-auto md:h-24 drop-shadow-sm"
+          />
         </Link>
 
         <nav className="hidden items-center gap-10 md:flex">

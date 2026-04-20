@@ -74,13 +74,15 @@ function ProductDetailPage() {
     );
   }
 
+  const imagemCarrinho = imagemAtiva ?? produto.imagem_url;
+
   const handleAdd = () => {
-    add({ id: produto.id, nome: produto.nome, preco: produto.preco, imagem_url: produto.imagem_url }, qty);
+    add({ id: produto.id, nome: produto.nome, preco: produto.preco, imagem_url: imagemCarrinho }, qty);
     toast.success(`${produto.nome} adicionado ao carrinho`);
   };
 
   const handleBuyNow = () => {
-    add({ id: produto.id, nome: produto.nome, preco: produto.preco, imagem_url: produto.imagem_url }, qty);
+    add({ id: produto.id, nome: produto.nome, preco: produto.preco, imagem_url: imagemCarrinho }, qty);
     navigate({ to: "/carrinho" });
   };
 

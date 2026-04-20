@@ -120,8 +120,11 @@ function CheckoutPage() {
       endereco: parsed.data.endereco,
     }).eq("id", user.id);
 
-    // Monta mensagem WhatsApp
-    const lines = items.map((i) => `• ${i.quantidade}x ${i.nome} — ${formatBRL(i.preco * i.quantidade)}`);
+    // Monta mensagem WhatsApp (com foto do produto quando disponível)
+    const lines = items.map((i) => {
+      const linha = `• ${i.quantidade}x ${i.nome} — ${formatBRL(i.preco * i.quantidade)}`;
+      return i.imagem_url ? `${linha}\n  📷 ${i.imagem_url}` : linha;
+    });
     const msg = [
       `🌸 *Novo pedido — Mesa & Cristal*`,
       `Pedido #${pedido.id.slice(0, 8)}`,

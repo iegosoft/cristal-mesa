@@ -98,7 +98,7 @@ function ContactPage() {
         {/* Info */}
         <div className="space-y-5">
           <a
-            href={whatsappLink("Olá! Vim pelo site.")}
+            href={whatsappLink("Olá! Vim pelo site, gostaria de saber mais sobre seus produtos.")}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-6 transition-shadow hover:shadow-[var(--shadow-soft)]"

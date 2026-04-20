@@ -9,13 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Mesa & Cristal — Mesa posta, louças e cristais" },
+      { title: "Vieira Decor — Mesa posta, louças e cristais" },
       {
         name: "description",
         content:
           "Cristais lapidados, porcelanas finas e composições de mesa posta para tornar cada refeição inesquecível.",
       },
-      { property: "og:title", content: "Mesa & Cristal" },
+      { property: "og:title", content: "Vieira Decor" },
       {
         property: "og:description",
         content: "Mesa posta, louças e cristais para encantar.",

@@ -1,13 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { CONTACT_EMAIL, INSTAGRAM, SITE_NAME, SITE_TAGLINE, whatsappLink } from "@/lib/site";
+import logo from "@/assets/logo-vieira-decor.jpeg";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3">
         <div>
-          <h3 className="font-serif text-2xl text-foreground">{SITE_NAME}</h3>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt={`${SITE_NAME} — logo`} className="h-12 w-12 rounded-full object-cover ring-1 ring-border" />
+            <h3 className="font-serif text-2xl text-foreground">{SITE_NAME}</h3>
+          </div>
           <p className="mt-3 text-sm font-light text-muted-foreground">{SITE_TAGLINE}</p>
         </div>
 

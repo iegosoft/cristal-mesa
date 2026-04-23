@@ -1,5 +1,5 @@
 import { Outlet, Link, createRootRoute, useMatches } from "@tanstack/react-router";
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -51,22 +51,39 @@ export const Route = createRootRoute({
 
 type MetaTag = Record<string, string>;
 
+/**
+ * Sincroniza <title> e <meta> com base nas rotas ativas.
+ * Em SPA, atualizamos document.title e tags meta no client a cada navegação.
+ */
 function RouteHead() {
   const matches = useMatches();
-  const allMeta: MetaTag[] = matches.flatMap(
-    (m) => ((m as { meta?: MetaTag[] }).meta as MetaTag[] | undefined) ?? [],
-  );
-  const titleEntry = [...allMeta].reverse().find((m) => "title" in m);
-  const metas = allMeta.filter((m) => !("title" in m));
-  return (
-    <Helmet>
-      {titleEntry?.title && <title>{titleEntry.title}</title>}
-      {metas.map((m, i) => {
-        const { title: _t, ...rest } = m;
-        return <meta key={i} {...rest} />;
-      })}
-    </Helmet>
-  );
+
+  useEffect(() => {
+    const allMeta: MetaTag[] = matches.flatMap(
+      (m) => ((m as { meta?: MetaTag[] }).meta as MetaTag[] | undefined) ?? [],
+    );
+
+    // Title: pega o último definido (mais específico)
+    const titleEntry = [...allMeta].reverse().find((m) => "title" in m);
+    if (titleEntry?.title) {
+      document.title = titleEntry.title;
+    }
+
+    // Atualiza meta tags gerenciadas (marcadas com data-route-meta)
+    const head = document.head;
+    head.querySelectorAll("meta[data-route-meta]").forEach((el) => el.remove());
+
+    allMeta
+      .filter((m) => !("title" in m))
+      .forEach((m) => {
+        const el = document.createElement("meta");
+        Object.entries(m).forEach(([k, v]) => el.setAttribute(k, v));
+        el.setAttribute("data-route-meta", "");
+        head.appendChild(el);
+      });
+  }, [matches]);
+
+  return null;
 }
 
 function RootComponent() {

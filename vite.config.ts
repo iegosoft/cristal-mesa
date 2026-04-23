@@ -7,9 +7,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // When deploying to Vercel, set the env var DEPLOY_TARGET=vercel.
-// Otherwise the project keeps building for Cloudflare (default in Lovable).
-const target = process.env.DEPLOY_TARGET === "vercel" ? "vercel" : undefined;
+// This disables the Cloudflare plugin and switches the TanStack Start adapter to Vercel.
+const isVercel = process.env.DEPLOY_TARGET === "vercel";
 
 export default defineConfig({
-  tanstackStart: target ? { target } : undefined,
+  tanstackStart: isVercel ? { target: "vercel" } : undefined,
+  cloudflare: isVercel ? false : undefined,
 });

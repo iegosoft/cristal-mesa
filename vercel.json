@@ -1,4 +1,5 @@
 {
   "buildCommand": "DEPLOY_TARGET=vercel npm run build",
+  "installCommand": "npm install",
   "framework": null
 }

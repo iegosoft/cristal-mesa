@@ -6,4 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-export default defineConfig();
+// When deploying to Vercel, set the env var DEPLOY_TARGET=vercel.
+// Otherwise the project keeps building for Cloudflare (default in Lovable).
+const target = process.env.DEPLOY_TARGET === "vercel" ? "vercel" : undefined;
+
+export default defineConfig({
+  tanstackStart: target ? { target } : undefined,
+});

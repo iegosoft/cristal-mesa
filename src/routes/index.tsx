@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Heart, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
-import heroImg from "@/assets/hero-table.jpg";
+import heroImg from "@/assets/2.jpg";
 import { ProductCard, type ProductCardProduct } from "@/components/ProductCard";
 import { whatsappLink } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import heroImg from "@/assets/hero-table.jpg";
+import heroImg from "@/assets/hero-table.jpeg";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -32,9 +32,12 @@ function AboutPage() {
             Receber é um gesto de amor
           </h1>
           <p className="text-base font-light leading-relaxed text-muted-foreground">
-            A Mesa &amp; Cristal nasceu do encanto por mesas postas — daquelas que transformam
-            um almoço comum em memória afetiva. Cada peça é escolhida a dedo, com atenção aos
-            detalhes, à textura, ao brilho e à harmonia.
+           A Vieira Decor não nasceu apenas como um negócio, mas como a extensão dos valores que cultivamos em nossa mesa e em nosso lar. Somos uma família católica que acredita que a casa é o santuário da vida, e que os momentos compartilhados em família são as maiores bênçãos que podemos receber.
+A ideia de fundar a Vieira Decor surgiu da nossa própria vivência. Para nós, a educação familiar e o respeito às tradições são a base de tudo. Percebemos que, ao redor de uma mesa bem posta, as conversas fluem melhor, os laços se fortalecem e os valores são transmitidos de geração em geração.
+
+Foi esse desejo de ajudar outras famílias a celebrarem a vida com beleza e dignidade que nos motivou a curar uma linha exclusiva de taças e utensílios de vidro e cristal.
+Nossa missão vai além de vender produtos; buscamos oferecer instrumentos para que seus momentos de hospitalidade e celebração sejam inesquecíveis. Cada peça em nosso catálogo é escolhida pela Família Vieira com o mesmo carinho e critério que usamos para a nossa própria casa.
+
           </p>
           <p className="text-base font-light leading-relaxed text-muted-foreground">
             Trabalhamos com cristais lapidados, porcelanas finas e vidros artesanais que carregam

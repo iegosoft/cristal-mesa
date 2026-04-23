@@ -1,6 +1,6 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
+import { Helmet } from "react-helmet-async";
 
-import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -34,41 +34,34 @@ function NotFoundComponent() {
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Mesa & Cristal — Mesa posta, louças e cristais" },
+      { title: "Vieira Decor — Mesa posta, louças e cristais" },
       {
         name: "description",
         content:
           "Louças de vidro, cristais e mesa posta para encantar seus momentos especiais. Conheça o catálogo e compre online.",
       },
-      { name: "author", content: "Mesa & Cristal" },
+      { name: "author", content: "Vieira Decor" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
 
-function RootShell({ children }: { children: React.ReactNode }) {
+function RouteHead() {
+  const matches = Route.useMatches();
+  const allMeta = matches.flatMap((m) => (m.meta as Array<Record<string, string>>) ?? []);
+  const titleEntry = [...allMeta].reverse().find((m) => "title" in m);
+  const metas = allMeta.filter((m) => !("title" in m));
   return (
-    <html lang="pt-BR">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
+    <Helmet>
+      {titleEntry?.title && <title>{titleEntry.title}</title>}
+      {metas.map((m, i) => {
+        const { title: _t, ...rest } = m;
+        return <meta key={i} {...rest} />;
+      })}
+    </Helmet>
   );
 }
 
@@ -77,6 +70,7 @@ function RootComponent() {
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
+          <RouteHead />
           <div className="flex min-h-screen flex-col bg-background">
             <SiteHeader />
             <main className="flex-1">

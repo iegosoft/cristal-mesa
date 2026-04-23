@@ -47,8 +47,24 @@ function AdminProdutosPage() {
   const handleDelete = async (p: Produto) => {
     if (!confirm(`Excluir "${p.nome}"? Esta ação não pode ser desfeita.`)) return;
     const { error } = await supabase.from("produtos").delete().eq("id", p.id);
-    if (error) toast.error(error.message);
-    else { toast.success("Produto excluído"); load(); }
+    if (error) {
+      // FK violation: produto já vendido
+      if (error.code === "23503") {
+        const desativar = confirm(
+          `Não é possível excluir "${p.nome}" porque ele já faz parte de pedidos antigos.\n\nDeseja DESATIVAR o produto? Ele some da loja, mas os pedidos antigos continuam intactos.`
+        );
+        if (desativar) {
+          const { error: e2 } = await supabase.from("produtos").update({ ativo: false }).eq("id", p.id);
+          if (e2) toast.error(e2.message);
+          else { toast.success("Produto desativado"); load(); }
+        }
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Produto excluído");
+      load();
+    }
   };
 
   return (

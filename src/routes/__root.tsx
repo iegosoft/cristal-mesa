@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, useMatches } from "@tanstack/react-router";
 import { Helmet } from "react-helmet-async";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -49,9 +49,13 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 });
 
+type MetaTag = Record<string, string>;
+
 function RouteHead() {
-  const matches = Route.useMatches();
-  const allMeta = matches.flatMap((m) => (m.meta as Array<Record<string, string>>) ?? []);
+  const matches = useMatches();
+  const allMeta: MetaTag[] = matches.flatMap(
+    (m) => ((m as { meta?: MetaTag[] }).meta as MetaTag[] | undefined) ?? [],
+  );
   const titleEntry = [...allMeta].reverse().find((m) => "title" in m);
   const metas = allMeta.filter((m) => !("title" in m));
   return (

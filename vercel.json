@@ -1,4 +1,6 @@
 {
   "buildCommand": "DEPLOY_TARGET=vercel npm run build",
-  "framework": null
+  "framework": "vite",
+  "outputDirectory": ".vercel/output",
+  "installCommand": "npm install"
 }

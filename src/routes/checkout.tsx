@@ -172,9 +172,11 @@ function CheckoutPage() {
       .join("\n");
 
     clear();
-    toast.success("Pedido registrado com sucesso!");
+    toast.success("Pedido registrado! Abrindo WhatsApp...");
     setConfirmacao({ codigo: codigoPedido, mensagem: msg });
     setSubmitting(false);
+    // Redireciona automaticamente para o WhatsApp (onde acontece o pagamento)
+    window.open(whatsappLink(msg), "_blank");
   };
 
   return (
@@ -311,9 +313,10 @@ function ConfirmacaoPedido({
             Código do pedido: <span className="font-medium text-foreground">#{confirmacao.codigo}</span>
           </p>
           <p className="mx-auto mt-4 max-w-lg text-sm font-light text-muted-foreground">
-            Para concluir, envie a mensagem abaixo para a Vieira Decor pelo
-            WhatsApp. Você pode clicar em <strong>Abrir WhatsApp</strong> ou
-            copiar a mensagem para enviar manualmente.
+            O WhatsApp foi aberto automaticamente em outra aba para concluir o
+            pagamento. Caso não tenha aberto, clique em{" "}
+            <strong>Abrir WhatsApp</strong> abaixo ou copie a mensagem para
+            enviá-la manualmente.
           </p>
         </div>
 

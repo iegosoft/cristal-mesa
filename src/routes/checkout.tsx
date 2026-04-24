@@ -45,7 +45,48 @@ function CheckoutPage() {
     }
     setSubmitting(true);
 
-    // Busca imagens dos produtos para enriquecer a mensagem
+    // Pega usuário logado (se houver) — visitantes ficam com usuario_id = null
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 1) Cria o pedido no banco (aparece no painel admin)
+    const { data: pedido, error: pedidoErr } = await supabase
+      .from("pedidos")
+      .insert({
+        usuario_id: user?.id ?? null,
+        total,
+        status: "pendente",
+        nome_cliente: parsed.data.nome,
+        telefone: parsed.data.telefone,
+        endereco: parsed.data.endereco,
+        observacoes: parsed.data.observacoes || null,
+      })
+      .select("id")
+      .single();
+
+    if (pedidoErr || !pedido) {
+      toast.error("Erro ao criar pedido: " + (pedidoErr?.message ?? "desconhecido"));
+      setSubmitting(false);
+      return;
+    }
+
+    // 2) Salva os itens do pedido
+    const { error: itensErr } = await supabase.from("itens_pedido").insert(
+      items.map((i) => ({
+        pedido_id: pedido.id,
+        produto_id: i.id,
+        nome_produto: i.nome,
+        quantidade: i.quantidade,
+        preco_unitario: i.preco,
+      })),
+    );
+
+    if (itensErr) {
+      toast.error("Erro ao salvar itens: " + itensErr.message);
+      setSubmitting(false);
+      return;
+    }
+
+    // 3) Busca imagens dos produtos para enriquecer a mensagem do WhatsApp
     const productIds = [...new Set(items.map((item) => item.id))];
     const [{ data: produtosData }, { data: extrasData }] = await Promise.all([
       supabase.from("produtos").select("id, imagem_url").in("id", productIds),
@@ -64,8 +105,7 @@ function CheckoutPage() {
       if (!imageMap.has(extra.produto_id)) imageMap.set(extra.produto_id, extra.url);
     }
 
-    // Código curto do pedido (não persistido — só pra referência na conversa)
-    const codigo = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const codigoPedido = pedido.id.slice(0, 8).toUpperCase();
     const dataHora = new Date().toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
@@ -97,7 +137,7 @@ function CheckoutPage() {
     const msg = [
       `✨ *NOVO PEDIDO — ${SITE_NAME.toUpperCase()}* ✨`,
       divisor,
-      `🧾 *Código:* #${codigo}`,
+      `🧾 *Código:* #${codigoPedido}`,
       `📅 *Data:* ${dataHora}`,
       ``,
       `👤 *DADOS DO CLIENTE*`,
@@ -121,7 +161,7 @@ function CheckoutPage() {
       .join("\n");
 
     clear();
-    toast.success("Abrindo WhatsApp para finalizar seu pedido...");
+    toast.success("Pedido registrado! Abrindo WhatsApp...");
     window.open(whatsappLink(msg), "_blank");
     navigate({ to: "/" });
     setSubmitting(false);

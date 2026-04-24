@@ -79,7 +79,7 @@ function AboutPage() {
           <div className="grid grid-cols-3 gap-4 pt-4">
             {[
               { n: "+100", l: "Vendas" },
-              { n: "+100", l: "Produtos" },
+              { n: "+30", l: "Produtos" },
               { n: "100%", l: "feito com amor" },
             ].map((s) => (
               <div

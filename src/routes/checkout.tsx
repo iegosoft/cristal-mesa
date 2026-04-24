@@ -173,10 +173,9 @@ function CheckoutPage() {
 
     clear();
     toast.success("Pedido registrado! Abrindo WhatsApp...");
-    setConfirmacao({ codigo: codigoPedido, mensagem: msg });
     setSubmitting(false);
-    // Redireciona automaticamente para o WhatsApp (onde acontece o pagamento)
-    window.open(whatsappLink(msg), "_blank");
+    // Redireciona o cliente direto para o WhatsApp com a mensagem pronta
+    window.location.href = whatsappLink(msg);
   };
 
   return (

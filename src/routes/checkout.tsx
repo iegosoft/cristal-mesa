@@ -172,9 +172,11 @@ function CheckoutPage() {
       .join("\n");
 
     clear();
-    toast.success("Pedido registrado com sucesso!");
+    toast.success("Pedido registrado! Abrindo WhatsApp...");
     setConfirmacao({ codigo: codigoPedido, mensagem: msg });
     setSubmitting(false);
+    // Redireciona automaticamente para o WhatsApp (onde acontece o pagamento)
+    window.open(whatsappLink(msg), "_blank");
   };
 
   return (

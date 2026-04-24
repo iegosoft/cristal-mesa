@@ -1,15 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
 import { useCart, formatBRL } from "@/lib/cart";
-import { whatsappLink } from "@/lib/site";
+import { whatsappLink, SITE_NAME } from "@/lib/site";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Mesa & Cristal" }] }),
+  head: () => ({ meta: [{ title: "Checkout — Vieira Decor" }] }),
   component: CheckoutPage,
 });
 
@@ -21,41 +20,10 @@ const checkoutSchema = z.object({
 });
 
 function CheckoutPage() {
-  const { user, loading: authLoading } = useAuth();
   const { items, total, clear } = useCart();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ nome: "", telefone: "", endereco: "", observacoes: "" });
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      toast.info("Faça login para finalizar o pedido");
-      navigate({ to: "/login", search: { redirect: "/checkout" } });
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("profiles")
-      .select("nome, telefone, endereco")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setForm((f) => ({
-            nome: data.nome || f.nome,
-            telefone: data.telefone || f.telefone,
-            endereco: data.endereco || f.endereco,
-            observacoes: f.observacoes,
-          }));
-        }
-      });
-  }, [user]);
-
-  if (authLoading || !user) {
-    return <div className="flex justify-center py-32"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
 
   if (items.length === 0) {
     return (
@@ -77,88 +45,83 @@ function CheckoutPage() {
     }
     setSubmitting(true);
 
-    const { data: pedido, error: pedidoErr } = await supabase
-      .from("pedidos")
-      .insert({
-        usuario_id: user.id,
-        total,
-        status: "pendente",
-        nome_cliente: parsed.data.nome,
-        telefone: parsed.data.telefone,
-        endereco: parsed.data.endereco,
-        observacoes: parsed.data.observacoes || null,
-      })
-      .select("id")
-      .single();
-
-    if (pedidoErr || !pedido) {
-      toast.error("Erro ao criar pedido: " + (pedidoErr?.message ?? "desconhecido"));
-      setSubmitting(false);
-      return;
-    }
-
-    const { error: itensErr } = await supabase.from("itens_pedido").insert(
-      items.map((i) => ({
-        pedido_id: pedido.id,
-        produto_id: i.id,
-        nome_produto: i.nome,
-        quantidade: i.quantidade,
-        preco_unitario: i.preco,
-      })),
-    );
-
-    if (itensErr) {
-      toast.error("Erro ao salvar itens: " + itensErr.message);
-      setSubmitting(false);
-      return;
-    }
-
-    // Atualiza profile com dados do checkout
-    await supabase.from("profiles").update({
-      nome: parsed.data.nome,
-      telefone: parsed.data.telefone,
-      endereco: parsed.data.endereco,
-    }).eq("id", user.id);
-
+    // Busca imagens dos produtos para enriquecer a mensagem
     const productIds = [...new Set(items.map((item) => item.id))];
     const [{ data: produtosData }, { data: extrasData }] = await Promise.all([
       supabase.from("produtos").select("id, imagem_url").in("id", productIds),
-      supabase.from("produto_imagens").select("produto_id, url, ordem").in("produto_id", productIds).order("ordem", { ascending: true }),
+      supabase
+        .from("produto_imagens")
+        .select("produto_id, url, ordem")
+        .in("produto_id", productIds)
+        .order("ordem", { ascending: true }),
     ]);
 
     const imageMap = new Map<string, string>();
-
     for (const produto of produtosData ?? []) {
       if (produto.imagem_url) imageMap.set(produto.id, produto.imagem_url);
     }
-
     for (const extra of extrasData ?? []) {
       if (!imageMap.has(extra.produto_id)) imageMap.set(extra.produto_id, extra.url);
     }
 
-    // Monta mensagem WhatsApp (com link clicável da foto do produto)
-    const lines = items.map((i) => {
-      const linha = `• ${i.quantidade}x ${i.nome} — ${formatBRL(i.preco * i.quantidade)}`;
-      const imageUrl = imageMap.get(i.id) ?? i.imagem_url;
-      return imageUrl ? `${linha}\n  📷 ${imageUrl}` : linha;
+    // Código curto do pedido (não persistido — só pra referência na conversa)
+    const codigo = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const dataHora = new Date().toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
+
+    const divisor = "━━━━━━━━━━━━━━━━━━━━";
+
+    const itensTexto = items
+      .map((i, idx) => {
+        const subtotal = formatBRL(i.preco * i.quantidade);
+        const unit = formatBRL(i.preco);
+        const imageUrl = imageMap.get(i.id) ?? i.imagem_url;
+        const linhas = [
+          `*${idx + 1}.* ${i.nome}`,
+          `   ▸ Quantidade: *${i.quantidade}*`,
+          `   ▸ Valor unitário: ${unit}`,
+          `   ▸ Subtotal: *${subtotal}*`,
+        ];
+        if (imageUrl) linhas.push(`   📷 ${imageUrl}`);
+        return linhas.join("\n");
+      })
+      .join("\n\n");
+
+    const totalItens = items.reduce((s, i) => s + i.quantidade, 0);
+
     const msg = [
-      `🌸 *Novo pedido — Mesa & Cristal*`,
-      `Pedido #${pedido.id.slice(0, 8)}`,
+      `✨ *NOVO PEDIDO — ${SITE_NAME.toUpperCase()}* ✨`,
+      divisor,
+      `🧾 *Código:* #${codigo}`,
+      `📅 *Data:* ${dataHora}`,
       ``,
-      `*Cliente:* ${parsed.data.nome}`,
-      `*Telefone:* ${parsed.data.telefone}`,
-      `*Endereço:* ${parsed.data.endereco}`,
-      parsed.data.observacoes ? `*Observações:* ${parsed.data.observacoes}` : "",
+      `👤 *DADOS DO CLIENTE*`,
+      divisor,
+      `*Nome:* ${parsed.data.nome}`,
+      `*WhatsApp:* ${parsed.data.telefone}`,
+      `*Endereço de entrega:*`,
+      parsed.data.endereco,
       ``,
-      `*Itens:*`,
-      ...lines,
+      `🛍️ *ITENS DO PEDIDO* (${totalItens} ${totalItens === 1 ? "peça" : "peças"})`,
+      divisor,
+      itensTexto,
       ``,
-      `*Total:* ${formatBRL(total)}`,
-    ].filter(Boolean).join("\n");
+      divisor,
+      `💎 *TOTAL: ${formatBRL(total)}*`,
+      divisor,
+      parsed.data.observacoes ? `\n📝 *Observações:*\n${parsed.data.observacoes}\n` : "",
+      `Olá! Gostaria de confirmar este pedido. Aguardo o retorno com as opções de pagamento e prazo de entrega. 💐`,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     clear();
-    toast.success("Pedido criado! Abrindo WhatsApp...");
+    toast.success("Abrindo WhatsApp para finalizar seu pedido...");
     window.open(whatsappLink(msg), "_blank");
     navigate({ to: "/" });
     setSubmitting(false);
@@ -169,6 +132,10 @@ function CheckoutPage() {
       <header className="mb-10">
         <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Finalizar</span>
         <h1 className="mt-2 font-serif text-4xl text-foreground md:text-5xl">Checkout</h1>
+        <p className="mt-3 max-w-xl text-sm font-light text-muted-foreground">
+          Preencha seus dados abaixo. Ao confirmar, abriremos o WhatsApp com o resumo
+          do seu pedido para finalizarmos com você.
+        </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -213,10 +180,10 @@ function CheckoutPage() {
             disabled={submitting}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium uppercase tracking-wider text-primary-foreground hover:bg-[var(--rose-deep)] disabled:opacity-50"
           >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar pedido"}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar pedido pelo WhatsApp"}
           </button>
           <p className="text-center text-xs font-light text-muted-foreground">
-            Após confirmar, abriremos o WhatsApp com o resumo para finalizar com você.
+            Não é necessário criar conta. Você fala direto com a Vieira Decor.
           </p>
         </form>
 

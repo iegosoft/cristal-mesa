@@ -70,7 +70,7 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           telefone: string
           total: number
-          usuario_id: string
+          usuario_id: string | null
         }
         Insert: {
           atualizado_em?: string
@@ -82,7 +82,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           telefone: string
           total: number
-          usuario_id: string
+          usuario_id?: string | null
         }
         Update: {
           atualizado_em?: string
@@ -94,7 +94,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           telefone?: string
           total?: number
-          usuario_id?: string
+          usuario_id?: string | null
         }
         Relationships: []
       }

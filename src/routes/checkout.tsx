@@ -44,14 +44,16 @@ function CheckoutPage() {
       return;
     }
     setSubmitting(true);
+    const pedidoId = crypto.randomUUID();
 
     // Pega usuário logado (se houver) — visitantes ficam com usuario_id = null
     const { data: { user } } = await supabase.auth.getUser();
 
     // 1) Cria o pedido no banco (aparece no painel admin)
-    const { data: pedido, error: pedidoErr } = await supabase
+    const { error: pedidoErr } = await supabase
       .from("pedidos")
       .insert({
+        id: pedidoId,
         usuario_id: user?.id ?? null,
         total,
         status: "pendente",
@@ -59,11 +61,9 @@ function CheckoutPage() {
         telefone: parsed.data.telefone,
         endereco: parsed.data.endereco,
         observacoes: parsed.data.observacoes || null,
-      })
-      .select("id")
-      .single();
+      });
 
-    if (pedidoErr || !pedido) {
+    if (pedidoErr) {
       toast.error("Erro ao criar pedido: " + (pedidoErr?.message ?? "desconhecido"));
       setSubmitting(false);
       return;
@@ -72,7 +72,7 @@ function CheckoutPage() {
     // 2) Salva os itens do pedido
     const { error: itensErr } = await supabase.from("itens_pedido").insert(
       items.map((i) => ({
-        pedido_id: pedido.id,
+        pedido_id: pedidoId,
         produto_id: i.id,
         nome_produto: i.nome,
         quantidade: i.quantidade,
@@ -105,7 +105,7 @@ function CheckoutPage() {
       if (!imageMap.has(extra.produto_id)) imageMap.set(extra.produto_id, extra.url);
     }
 
-    const codigoPedido = pedido.id.slice(0, 8).toUpperCase();
+    const codigoPedido = pedidoId.slice(0, 8).toUpperCase();
     const dataHora = new Date().toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",

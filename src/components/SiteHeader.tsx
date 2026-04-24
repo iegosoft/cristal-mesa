@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, ShoppingBag, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, ShoppingBag, LayoutDashboard } from "lucide-react";
 import { SITE_NAME } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
@@ -16,14 +16,8 @@ const links = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const { user, isAdmin, signOut } = useAuth();
+  const { isAdmin } = useAuth();
   const { count } = useCart();
-  const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate({ to: "/" });
-  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -68,21 +62,6 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
-          {user ? (
-            <button
-              onClick={handleSignOut}
-              className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-xs font-medium uppercase tracking-wider text-secondary-foreground hover:bg-accent"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Sair
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-wider text-primary-foreground hover:bg-[var(--rose-deep)]"
-            >
-              <User className="h-3.5 w-3.5" /> Entrar
-            </Link>
-          )}
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
@@ -120,8 +99,8 @@ export function SiteHeader() {
                 {l.label}
               </Link>
             ))}
-            <div className="mt-2 flex flex-col gap-2 border-t border-border/60 pt-4">
-              {isAdmin && (
+            {isAdmin && (
+              <div className="mt-2 flex flex-col gap-2 border-t border-border/60 pt-4">
                 <Link
                   to="/admin/dashboard"
                   onClick={() => setOpen(false)}
@@ -129,27 +108,8 @@ export function SiteHeader() {
                 >
                   <LayoutDashboard className="h-3.5 w-3.5" /> Painel Admin
                 </Link>
-              )}
-              {user ? (
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    handleSignOut();
-                  }}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-xs font-medium uppercase tracking-wider text-secondary-foreground"
-                >
-                  <LogOut className="h-3.5 w-3.5" /> Sair
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-medium uppercase tracking-wider text-primary-foreground"
-                >
-                  <User className="h-3.5 w-3.5" /> Entrar / Cadastrar
-                </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </nav>
       )}
